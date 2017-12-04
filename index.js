@@ -402,6 +402,8 @@ rbush3d.prototype = {
             node.children.sort(compareMinX);
         } else if (yMargin < xMargin && yMargin < zMargin) {
             node.children.sort(compareMinY);
+        } else {
+            node.children.sort(compareMinZ);
         }
     },
 
