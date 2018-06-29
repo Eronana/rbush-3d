@@ -81,6 +81,43 @@ rbush3d.prototype = {
         return false;
     },
 
+    raycastInv: function (ox, oy, oz, idx, idy, idz, length) {
+        length = length || Infinity;
+        var node = this.data,
+            toBBox = this.toBBox,
+            result,
+            dist = Infinity;
+
+        if (idx === Infinity && idy === Infinity && idz === Infinity) return undefined;
+        if (boxRayIntersects(node, ox, oy, oz, idx, idy, idz) === Infinity) return undefined;
+
+        var nodesToSearch = [],
+            i, len, child, childBBox;
+
+        while (node) {
+            for (i = 0, len = node.children.length; i < len; i++) {
+                child = node.children[i];
+                childBBox = node.leaf ? toBBox(child) : child;
+                var d = boxRayIntersects(childBBox, ox, oy, oz, idx, idy, idz);
+                if (d < length) {
+                    if (!node.leaf) {
+                        nodesToSearch.push(child);
+                    } else if (d < dist) {
+                        dist = d;
+                        result = child;
+                    }
+                }
+            }
+            node = nodesToSearch.pop();
+        }
+
+        return result;
+    },
+
+    raycast: function (ox, oy, oz, dx, dy, dz, length) {
+        return this.raycastInv(ox, oy, oz, 1 / dx, 1 / dy, 1 / dz, length);
+    },
+
     load: function (data) {
         if (!(data && data.length)) return this;
 
@@ -573,6 +610,26 @@ function intersects(a, b) {
            b.maxX >= a.minX &&
            b.maxY >= a.minY &&
            b.maxZ >= a.minZ;
+}
+
+function boxRayIntersects(box, ox, oy, oz, idx, idy, idz) {
+    var tx0 = (box.minX - ox) * idx;
+    var tx1 = (box.maxX - ox) * idx;
+    var ty0 = (box.minY - oy) * idy;
+    var ty1 = (box.maxY - oy) * idy;
+    var tz0 = (box.minZ - oz) * idz;
+    var tz1 = (box.maxZ - oz) * idz;
+
+    var z0 = Math.min(tz0, tz1);
+    var z1 = Math.max(tz0, tz1);
+    var y0 = Math.min(ty0, ty1);
+    var y1 = Math.max(ty0, ty1);
+    var x0 = Math.min(tx0, tx1);
+    var x1 = Math.max(tx0, tx1);
+
+    var tmin = Math.max(0, x0, y0, z0);
+    var tmax = Math.min(x1, y1, z1);
+    return tmax >= tmin ? tmin : Infinity;
 }
 
 function createNode(children) {

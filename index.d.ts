@@ -29,9 +29,15 @@ interface ToBBox {
 
 interface RBush3D {
   all():BBox[];
+  search(bbox:any):any[];
   search(bbox:BBox):BBox[];
+  collides(bbox:any):boolean;
   collides(bbox:BBox):boolean;
+  raycastInv(ox:number, oy:number, oz:number, idx:number, idy:number, idz:number, length = Infinity):BBox|undefined;
+  raycast(ox:number, oy:number, oz:number, dx:number, dy:number, dz:number, length = Infinity):BBox|undefined;
+  load(data:any[]):this;
   load(data:BBox[]):this;
+  insert(item:any):this;
   insert(item:BBox):this;
   clear():this;
   remove(item:BBox, equalsFn?:EqualsFn):this;

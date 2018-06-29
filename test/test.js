@@ -57,6 +57,41 @@ function intersects(a, b) {
             b.maxZ >= a.minZ;
 }
 
+function boxRayIntersects(box, ox, oy, oz, idx, idy, idz) {
+    var tx0 = (box.minX - ox) * idx;
+    var tx1 = (box.maxX - ox) * idx;
+    var ty0 = (box.minY - oy) * idy;
+    var ty1 = (box.maxY - oy) * idy;
+    var tz0 = (box.minZ - oz) * idz;
+    var tz1 = (box.maxZ - oz) * idz;
+
+    var z0 = Math.min(tz0, tz1);
+    var z1 = Math.max(tz0, tz1);
+    var y0 = Math.min(ty0, ty1);
+    var y1 = Math.max(ty0, ty1);
+    var x0 = Math.min(tx0, tx1);
+    var x1 = Math.max(tx0, tx1);
+
+    var tmin = Math.max(0, x0, y0, z0);
+    var tmax = Math.min(x1, y1, z1);
+    return tmax >= tmin ? tmin : Infinity;
+}
+
+function bfRaycast(data, ox, oy, oz, dx, dy, dz) {
+    if (!dx && !dy && !dz) return undefined;
+    var idx = 1 / dx, idy = 1 / dy, idz = 1 / dz;
+    var dist = Infinity;
+    var result;
+    data.forEach(function (node) {
+        var d = boxRayIntersects(node, ox, oy, oz, idx, idy, idz);
+        if (d < dist) {
+            dist = d;
+            result = node;
+        }
+    });
+    return result;
+}
+
 function bfSearch(bbox, data) {
     return data.filter(function (node) {
         return intersects(bbox, node);
@@ -511,6 +546,66 @@ t('#collides with random data', function (t) {
         var result = tree.collides(bbox);
         var expectedResult = bfCollides(bbox, randomPoints);
         t.same(result, expectedResult);
+    });
+    t.end();
+});
+
+t('#raycast with one bbox', function (t) {
+    var tree = rbush3d();
+    tree.insert({
+        minX: 1,
+        minY: 1,
+        minZ: 1,
+        maxX: 100,
+        maxY: 100,
+        maxZ: 100,
+    });
+    t.equal(tree.raycast(0, 0, 0, 1, 0, 0), undefined);
+    t.equal(tree.raycast(0, 0, 0, 0, 1, 0), undefined);
+    t.equal(tree.raycast(0, 0, 0, 0, 0, 1), undefined);
+    t.equal(tree.raycast(0, 0, 0, 1, 1, 0), undefined);
+    t.equal(tree.raycast(0, 0, 0, 0, 1, 1), undefined);
+    t.equal(tree.raycast(0, 0, 0, 1, 0, 1), undefined);
+    t.equal(tree.raycast(0, 0, 0, -1, 0, 0), undefined);
+    t.equal(tree.raycast(0, 0, 0, 0, -1, 0), undefined);
+    t.equal(tree.raycast(0, 0, 0, 0, 0, -1), undefined);
+    t.equal(tree.raycast(0, 0, 0, -1, -1, 0), undefined);
+    t.equal(tree.raycast(0, 0, 0, 0, -1, -1), undefined);
+    t.equal(tree.raycast(0, 0, 0, -1, 0, -1), undefined);
+    t.equal(tree.raycast(0, 0, 0, -1, -1, -1), undefined);
+    t.notEqual(tree.raycast(0, 0, 0, 1, 1, 1), undefined);
+    t.notEqual(tree.raycast(20, 20, 20, 1, 1, 1), undefined);
+    t.notEqual(tree.raycast(50, 50, 0, 0, 0, 1), undefined);
+    t.end();
+});
+
+t('#raycast with finite length', function (t) {
+    var tree = rbush3d();
+    tree.insert({
+        minX: 100,
+        minY: 100,
+        minZ: 100,
+        maxX: 200,
+        maxY: 200,
+        maxZ: 200,
+    });
+    t.equal(tree.raycast(0, 0, 0, 1, 1, 1, 99), undefined);
+    t.notEqual(tree.raycast(0, 0, 0, 1, 1, 1, 101), undefined);
+    t.equal(tree.raycast(150, 150, 50, 0, 0, 1, 49), undefined);
+    t.notEqual(tree.raycast(150, 150, 50, 0, 0, 1, 51), undefined);
+    t.end();
+});
+
+t('#raycast with ramdom bboxes', function (t) {
+    var randomBoxes = randBoxes(2000, 200);
+    var randomRays = randBoxes(2000, 200);
+    var tree = rbush3d(8).load(randomBoxes);
+    const data = tree.all();
+    randomRays.forEach(({
+        minX: ox, minY: oy, minZ: oz,
+        maxX: dx, maxY: dy, maxZ: dz,
+    }) => {
+        t.equal(bfRaycast(data, ox, oy, oz, dx, dy, dz), tree.raycast(ox, oy, oz, dx, dy, dz));
     });
     t.end();
 });

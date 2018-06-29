@@ -3,3 +3,4 @@ npm-debug.log
 coverage
 rbush3d.js
 rbush3d.min.js
+package-lock.json
