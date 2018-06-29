@@ -601,11 +601,10 @@ t('#raycast with ramdom bboxes', function (t) {
     var randomRays = randBoxes(2000, 200);
     var tree = rbush3d(8).load(randomBoxes);
     const data = tree.all();
-    randomRays.forEach(({
-        minX: ox, minY: oy, minZ: oz,
-        maxX: dx, maxY: dy, maxZ: dz,
-    }) => {
-        t.equal(bfRaycast(data, ox, oy, oz, dx, dy, dz), tree.raycast(ox, oy, oz, dx, dy, dz));
+    randomRays.forEach(function (ray) {
+        return t.equal(
+            bfRaycast(data, ray.minX, ray.minY, ray.minZ, ray.maxX, ray.maxY, ray.maxZ),
+            tree.raycast(ray.minX, ray.minY, ray.minZ, ray.maxX, ray.maxY, ray.maxZ));
     });
     t.end();
 });
