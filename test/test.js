@@ -72,9 +72,9 @@ function boxRayIntersects(box, ox, oy, oz, idx, idy, idz) {
     var x0 = Math.min(tx0, tx1);
     var x1 = Math.max(tx0, tx1);
 
-    var tmin = Math.max(0, x0, y0, z0);
+    var tmin = Math.max(x0, y0, z0);
     var tmax = Math.min(x1, y1, z1);
-    return tmax >= tmin ? tmin : Infinity;
+    return tmax < 0 || tmin > tmax ? Infinity : tmin;
 }
 
 function bfRaycast(data, ox, oy, oz, dx, dy, dz) {
@@ -573,6 +573,7 @@ t('#raycast with one bbox', function (t) {
     t.equal(tree.raycast(0, 0, 0, 0, -1, -1), undefined);
     t.equal(tree.raycast(0, 0, 0, -1, 0, -1), undefined);
     t.equal(tree.raycast(0, 0, 0, -1, -1, -1), undefined);
+    t.equal(tree.raycast(50, 50, 50, 0, 0, 0), undefined);
     t.notEqual(tree.raycast(0, 0, 0, 1, 1, 1), undefined);
     t.notEqual(tree.raycast(20, 20, 20, 1, 1, 1), undefined);
     t.notEqual(tree.raycast(50, 50, 0, 0, 0, 1), undefined);

@@ -53,6 +53,7 @@
     }
   },
   "dependencies": {
+    "heap": "^0.2.6",
     "quickselect": "^1.0.0"
   }
 }

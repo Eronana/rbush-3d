@@ -4,6 +4,7 @@ module.exports = rbush3d;
 module.exports.default = rbush3d;
 
 var quickselect = require('quickselect');
+var Heap = require('heap');
 
 function rbush3d(maxEntries, format) {
     if (!(this instanceof rbush3d)) return new rbush3d(maxEntries, format);
@@ -86,31 +87,37 @@ rbush3d.prototype = {
         var node = this.data,
             toBBox = this.toBBox,
             result,
-            dist = Infinity;
+            dist = length;
 
         if (idx === Infinity && idy === Infinity && idz === Infinity) return undefined;
         if (boxRayIntersects(node, ox, oy, oz, idx, idy, idz) === Infinity) return undefined;
 
-        var nodesToSearch = [],
-            i, len, child, childBBox;
-
-        while (node) {
-            for (i = 0, len = node.children.length; i < len; i++) {
-                child = node.children[i];
-                childBBox = node.leaf ? toBBox(child) : child;
+        var nodesToSearch = new Heap(function (a, b) {
+            return a.dist - b.dist;
+        });
+        nodesToSearch.push({
+            dist: dist,
+            node: node,
+        });
+        while (!nodesToSearch.empty() && nodesToSearch.top().dist <= dist) {
+            node = nodesToSearch.pop().node;
+            for (var i = 0, len = node.children.length; i < len; i++) {
+                var child = node.children[i];
+                var childBBox = node.leaf ? toBBox(child) : child;
                 var d = boxRayIntersects(childBBox, ox, oy, oz, idx, idy, idz);
-                if (d < length) {
+                if (d < dist) {
                     if (!node.leaf) {
-                        nodesToSearch.push(child);
-                    } else if (d < dist) {
+                        nodesToSearch.push({
+                            dist: d,
+                            node: child,
+                        });
+                    } else {
                         dist = d;
                         result = child;
                     }
                 }
             }
-            node = nodesToSearch.pop();
         }
-
         return result;
     },
 
@@ -627,9 +634,9 @@ function boxRayIntersects(box, ox, oy, oz, idx, idy, idz) {
     var x0 = Math.min(tx0, tx1);
     var x1 = Math.max(tx0, tx1);
 
-    var tmin = Math.max(0, x0, y0, z0);
+    var tmin = Math.max(x0, y0, z0);
     var tmax = Math.min(x1, y1, z1);
-    return tmax >= tmin ? tmin : Infinity;
+    return tmax < 0 || tmin > tmax ? Infinity : tmin;
 }
 
 function createNode(children) {
