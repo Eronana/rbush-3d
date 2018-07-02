@@ -4,7 +4,6 @@ module.exports = rbush3d;
 module.exports.default = rbush3d;
 
 var quickselect = require('quickselect');
-var Heap = require('heap');
 
 function rbush3d(maxEntries, format) {
     if (!(this instanceof rbush3d)) return new rbush3d(maxEntries, format);
@@ -83,42 +82,77 @@ rbush3d.prototype = {
     },
 
     raycastInv: function (ox, oy, oz, idx, idy, idz, length) {
-        length = length || Infinity;
+        var maxLen = length || Infinity;
         var node = this.data,
-            toBBox = this.toBBox,
-            result,
-            dist = length;
+            toBBox = this.toBBox;
+        var noIntersection = {dist: Infinity, node: undefined};
+        if (idx === Infinity && idy === Infinity && idz === Infinity) return noIntersection;
+        if (boxRayIntersects(node, ox, oy, oz, idx, idy, idz) === Infinity) return noIntersection;
 
-        if (idx === Infinity && idy === Infinity && idz === Infinity) return undefined;
-        if (boxRayIntersects(node, ox, oy, oz, idx, idy, idz) === Infinity) return undefined;
-
-        var nodesToSearch = new Heap(function (a, b) {
-            return a.dist - b.dist;
-        });
-        nodesToSearch.push({
-            dist: dist,
+        var heap = [{
+            dist: 0,
             node: node,
-        });
-        while (!nodesToSearch.empty() && nodesToSearch.top().dist <= dist) {
-            node = nodesToSearch.pop().node;
+        }];
+        var swap = function (a, b) {
+            var t = heap[a];
+            heap[a] = heap[b];
+            heap[b] = t;
+        };
+        var pop = function () {
+            var top = heap[0];
+            var newLen = heap.length - 1;
+            heap[0] = heap[newLen];
+            heap.length = newLen;
+            var idx = 0;
+            while (true) {
+                var left = (idx << 1) | 1;
+                if (left >= newLen) break;
+                var right = left + 1;
+                if (right < newLen && heap[right].dist < heap[left].dist) {
+                    left = right;
+                }
+                if (heap[idx].dist < heap[left].dist) break;
+                swap(idx, left);
+                idx = left;
+            }
+            return top;
+        };
+        var push = function (dist, node) {
+            var idx = heap.length;
+            heap.push({dist: dist, node: node});
+            while (idx > 0) {
+                var p = (idx - 1) >> 1;
+                if (heap[p].dist <= heap[idx].dist) break;
+                swap(idx, p);
+                idx = p;
+            }
+        };
+
+        var dist = maxLen, result;
+        while (heap.length && heap[0].dist < dist) {
+            node = pop().node;
             for (var i = 0, len = node.children.length; i < len; i++) {
                 var child = node.children[i];
                 var childBBox = node.leaf ? toBBox(child) : child;
                 var d = boxRayIntersects(childBBox, ox, oy, oz, idx, idy, idz);
-                if (d < dist) {
-                    if (!node.leaf) {
-                        nodesToSearch.push({
+                if (!node.leaf) {
+                    push(d, child);
+                } else if (d < dist) {
+                    if (d === 0) {
+                        return {
                             dist: d,
                             node: child,
-                        });
-                    } else {
-                        dist = d;
-                        result = child;
+                        };
                     }
+                    dist = d;
+                    result = child;
                 }
             }
         }
-        return result;
+        return {
+            dist: dist < maxLen ? dist : Infinity,
+            node: result,
+        };
     },
 
     raycast: function (ox, oy, oz, dx, dy, dz, length) {
@@ -634,9 +668,9 @@ function boxRayIntersects(box, ox, oy, oz, idx, idy, idz) {
     var x0 = Math.min(tx0, tx1);
     var x1 = Math.max(tx0, tx1);
 
-    var tmin = Math.max(x0, y0, z0);
+    var tmin = Math.max(0, x0, y0, z0);
     var tmax = Math.min(x1, y1, z1);
-    return tmax < 0 || tmin > tmax ? Infinity : tmin;
+    return tmax >= tmin ? tmin : Infinity;
 }
 
 function createNode(children) {
