@@ -81,6 +81,84 @@ rbush3d.prototype = {
         return false;
     },
 
+    raycastInv: function (ox, oy, oz, idx, idy, idz, length) {
+        var maxLen = length || Infinity;
+        var node = this.data,
+            toBBox = this.toBBox;
+        var noIntersection = {dist: Infinity, node: undefined};
+        if (idx === Infinity && idy === Infinity && idz === Infinity) return noIntersection;
+        if (boxRayIntersects(node, ox, oy, oz, idx, idy, idz) === Infinity) return noIntersection;
+
+        var heap = [{
+            dist: 0,
+            node: node,
+        }];
+        var swap = function (a, b) {
+            var t = heap[a];
+            heap[a] = heap[b];
+            heap[b] = t;
+        };
+        var pop = function () {
+            var top = heap[0];
+            var newLen = heap.length - 1;
+            heap[0] = heap[newLen];
+            heap.length = newLen;
+            var idx = 0;
+            while (true) {
+                var left = (idx << 1) | 1;
+                if (left >= newLen) break;
+                var right = left + 1;
+                if (right < newLen && heap[right].dist < heap[left].dist) {
+                    left = right;
+                }
+                if (heap[idx].dist < heap[left].dist) break;
+                swap(idx, left);
+                idx = left;
+            }
+            return top;
+        };
+        var push = function (dist, node) {
+            var idx = heap.length;
+            heap.push({dist: dist, node: node});
+            while (idx > 0) {
+                var p = (idx - 1) >> 1;
+                if (heap[p].dist <= heap[idx].dist) break;
+                swap(idx, p);
+                idx = p;
+            }
+        };
+
+        var dist = maxLen, result;
+        while (heap.length && heap[0].dist < dist) {
+            node = pop().node;
+            for (var i = 0, len = node.children.length; i < len; i++) {
+                var child = node.children[i];
+                var childBBox = node.leaf ? toBBox(child) : child;
+                var d = boxRayIntersects(childBBox, ox, oy, oz, idx, idy, idz);
+                if (!node.leaf) {
+                    push(d, child);
+                } else if (d < dist) {
+                    if (d === 0) {
+                        return {
+                            dist: d,
+                            node: child,
+                        };
+                    }
+                    dist = d;
+                    result = child;
+                }
+            }
+        }
+        return {
+            dist: dist < maxLen ? dist : Infinity,
+            node: result,
+        };
+    },
+
+    raycast: function (ox, oy, oz, dx, dy, dz, length) {
+        return this.raycastInv(ox, oy, oz, 1 / dx, 1 / dy, 1 / dz, length);
+    },
+
     load: function (data) {
         if (!(data && data.length)) return this;
 
@@ -573,6 +651,26 @@ function intersects(a, b) {
            b.maxX >= a.minX &&
            b.maxY >= a.minY &&
            b.maxZ >= a.minZ;
+}
+
+function boxRayIntersects(box, ox, oy, oz, idx, idy, idz) {
+    var tx0 = (box.minX - ox) * idx;
+    var tx1 = (box.maxX - ox) * idx;
+    var ty0 = (box.minY - oy) * idy;
+    var ty1 = (box.maxY - oy) * idy;
+    var tz0 = (box.minZ - oz) * idz;
+    var tz1 = (box.maxZ - oz) * idz;
+
+    var z0 = Math.min(tz0, tz1);
+    var z1 = Math.max(tz0, tz1);
+    var y0 = Math.min(ty0, ty1);
+    var y1 = Math.max(ty0, ty1);
+    var x0 = Math.min(tx0, tx1);
+    var x1 = Math.max(tx0, tx1);
+
+    var tmin = Math.max(0, x0, y0, z0);
+    var tmax = Math.min(x1, y1, z1);
+    return tmax >= tmin ? tmin : Infinity;
 }
 
 function createNode(children) {

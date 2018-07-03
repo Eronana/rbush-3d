@@ -1,6 +1,6 @@
 {
   "name": "rbush-3d",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "High-performance 3D spatial index for cuboids (based on R*-tree with bulk loading and bulk insertion algorithms)",
   "homepage": "https://github.com/eronana/rbush-3d",
   "repository": {
