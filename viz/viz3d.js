@@ -5,7 +5,7 @@ const camera = require('regl-camera')(regl, {
     eye: [0, 0, 20],
     center: [0, 0, 0],
 })
-const rbush3d = require('../index')
+const RBush3D = require('../dist').RBush3D
 
 const colors = [
     [1, 0.3, 0],
@@ -63,7 +63,7 @@ for (let i = 0; i < 8; ++i) {
     }
 }
 
-const tree = rbush3d(10)
+const tree = new RBush3D(10)
 let treeMesh = []
 
 function updateMesh () {

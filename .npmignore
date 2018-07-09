@@ -1,4 +1,10 @@
+src
 bench
 viz
 test
 .travis.yml
+.vscode
+.gitignore
+tsconfig.json
+tsconfig.build.json
+tslint.json

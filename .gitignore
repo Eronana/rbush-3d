@@ -4,3 +4,5 @@ coverage
 rbush3d.js
 rbush3d.min.js
 package-lock.json
+dist
+.nyc_output

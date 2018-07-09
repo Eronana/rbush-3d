@@ -17,31 +17,32 @@ RBush-3D is 3D version of [RBush](https://github.com/mourner/rbush).
 Install with NPM (`npm install rbush-3d`), and Chinese user could use CNPM(`cnpm install rbush-3d`).
 
 Or use CDN links for browsers:
-[rbush3d.js](https://unpkg.com/rbush-3d@0.0.2/rbush3d.js),
-[rbush3d.min.js](https://unpkg.com/rbush-3d@0.0.2/rbush3d.min.js)
+[rbush3d.js](https://unpkg.com/rbush-3d@0.0.4/dist/rbush3d.js),
+[rbush3d.min.js](https://unpkg.com/rbush-3d@0.0.4/dist/rbush3d.min.js)
 
 ## Usage
 
 ### Creating a Tree
 
-```js
-var tree = rbush3d();
+```typescript
+improt { RBush3D } from 'rbush-3d';
+const tree = new RBush3D();
 ```
 
-An optional argument to `rbush3d` defines the maximum number of entries in a tree node.
+An optional argument to `RBush3D` defines the maximum number of entries in a tree node.
 `16` (used by default) is a reasonable choice for most applications.
 Higher value means faster insertion and slower search, and vice versa.
 
-```js
-var tree = rbush3d(16);
+```typescript
+const tree = new RBush3D(16);
 ```
 
 ### Adding Data
 
 Insert an item:
 
-```js
-var item = {
+```typescript
+const item = {
     minX: 20,
     minY: 40,
     minZ: 60,
@@ -57,7 +58,7 @@ tree.insert(item);
 
 Remove a previously inserted item:
 
-```js
+```typescript
 tree.remove(item);
 ```
 
@@ -65,7 +66,7 @@ By default, RBush-3D removes objects by reference.
 However, you can pass a custom `equals` function to compare by value for removal,
 which is useful when you only have a copy of the object you need removed (e.g. loaded from server):
 
-```js
+```typescript
 tree.remove(itemCopy, function (a, b) {
     return a.id === b.id;
 });
@@ -73,7 +74,7 @@ tree.remove(itemCopy, function (a, b) {
 
 Remove all items:
 
-```js
+```typescript
 tree.clear();
 ```
 
@@ -84,8 +85,8 @@ with `minX`, `minY`, `minZ`, `maxX`, `maxY` and `maxZ` properties.
 You can customize this by providing an array with corresponding accessor strings
 as a second argument to `rbush3d` like this:
 
-```js
-var tree = rbush3d(16, ['[0]', '[1]', '[2]', '[0]', '[1]', '[2]']); // accept [x, y, z] points
+```typescript
+const tree = rbush3d(16, ['[0]', '[1]', '[2]', '[0]', '[1]', '[2]']); // accept [x, y, z] points
 tree.insert([20, 50, 80]);
 ```
 
@@ -93,7 +94,7 @@ tree.insert([20, 50, 80]);
 
 Bulk-insert the given data into the tree:
 
-```js
+```typescript
 tree.load([item1, item2, ...]);
 ```
 
@@ -110,8 +111,8 @@ but makes query performance worse if the data is scattered.
 
 ### Search
 
-```js
-var result = tree.search({
+```typescript
+const result = tree.search({
     minX: 40,
     minY: 20,
     minZ: 50,
@@ -126,16 +127,16 @@ Returns an array of data items (points or rectangles) that the given bounding bo
 Note that the `search` method accepts a bounding box in `{minX, minY, minZ, maxX, maxY, maxZ}` format
 regardless of the format specified in the constructor (which only affects inserted objects).
 
-```js
-var allItems = tree.all();
+```typescript
+const allItems = tree.all();
 ```
 
 Returns all items of the tree.
 
 ### Collisions
 
-```js
-var result = tree.collides({minX: 40, minY: 20, minZ: 50, maxX: 80, maxY: 70, maxZ: 90});
+```typescript
+const result = tree.collides({minX: 40, minY: 20, minZ: 50, maxX: 80, maxY: 70, maxZ: 90});
 ```
 
 Returns `true` if there are any items intersecting the given bounding box, otherwise `false`.
@@ -143,12 +144,12 @@ Returns `true` if there are any items intersecting the given bounding box, other
 
 ### Export and Import
 
-```js
+```typescript
 // export data as JSON object
-var treeData = tree.toJSON();
+const treeData = tree.toJSON();
 
 // import previously exported data
-var tree = rbush3d(16).fromJSON(treeData);
+const tree = rbush3d(16).fromJSON(treeData);
 ```
 
 Importing and exporting as JSON allows you to use RBush-3D on both the server (using Node.js) and the browser combined,
@@ -160,7 +161,7 @@ Note that the `nodeSize` option passed to the constructor must be the same in bo
 
 The following sample performance test was done by generating
 random uniformly distributed rectangles of ~0.01% area and setting `maxEntries` to `16`
-(see `debug/perf.js` script).
+(see `debug/perf.ts` script).
 Performed with Node.js v8.9.1 on a MacBook Pro (15-inch, 2017).
 
 Test                         | RBush-3D | [RBush](https://github.com/mourner/rbush) (2D version)
@@ -192,10 +193,10 @@ bulk-insert 1M items         | 1.40s    | 1.17s
 ## Development
 
 ```bash
-npm install  # install dependencies
+npm install   # install dependencies
 
-npm test     # check the code with JSHint and run tests
-npm run perf # run performance benchmarks
-npm run cov  # report test coverage (with more detailed report in coverage/lcov-report/index.html)
-npm run viz  # show 3d visualization in browser
+npm test      # check the code with JSHint and run tests
+npm run perf  # run performance benchmarks
+npm run cover # report test coverage (with more detailed report in coverage/lcov-report/index.html)
+npm run viz   # show 3d visualization in browser
 ```
