@@ -8,3 +8,6 @@ test
 tsconfig.json
 tsconfig.build.json
 tslint.json
+dist
+.nyc_output
+coverage
