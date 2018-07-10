@@ -109,13 +109,6 @@ const emptyData = [
   [-Infinity, -Infinity, -Infinity, Infinity, Infinity, Infinity],
 ].map(arrToBBox);
 
-t('constructor accepts a format argument to customize the data format', t => {
-  const tree = new RBush3D(8, ['minXX', 'minYY', 'minZZ', 'maxXX', 'maxYY', 'maxZZ']);
-  t.same(tree.toBBox({ minXX: 1, minYY: 2, minZZ: 3, maxXX: 4, maxYY: 5, maxZZ: 6 }),
-    arrToBBox([1, 2, 3, 4, 5, 6]));
-  t.end();
-});
-
 t('constructor uses 16 max entries by default', t => {
   const tree = RBush3D.alloc().load(someData(16));
   t.equal(tree.toJSON().height, 1);
@@ -135,92 +128,6 @@ interface XBBox {
   maxYY:number;
   maxZZ:number;
 }
-
-t('#toBBox, #compareMinX, #compareMinY can be overriden to allow custom data structures', t => {
-
-  const tree = new RBush3D<keyof XBBox>(8);
-  tree.toBBox = (item:XBBox) => {
-    return {
-      minX: item.minXX,
-      minY: item.minYY,
-      minZ: item.minZZ,
-      maxX: item.maxXX,
-      maxY: item.maxYY,
-      maxZ: item.maxZZ,
-    };
-  };
-
-  tree.compareMinX = function (a:XBBox, b:XBBox) {
-    return a.minXX - b.minXX;
-  };
-  tree.compareMinY = function (a:XBBox, b:XBBox) {
-    return a.minYY - b.minYY;
-  };
-  tree.compareMinZ = function (a:XBBox, b:XBBox) {
-    return a.minZZ - b.minZZ;
-  };
-
-  const data = [
-    { minXX: -115, minYY: 45, minZZ: 25, maxXX: -105, maxYY: 55, maxZZ: 35 },
-    { minXX: 105, minYY: 45, minZZ: 25, maxXX: 115, maxYY: 55, maxZZ: 35 },
-    { minXX: 105, minYY: -55, minZZ: 25, maxXX: 115, maxYY: -45, maxZZ: 35 },
-    { minXX: -115, minYY: -55, minZZ: 25, maxXX: -105, maxYY: -45, maxZZ: 35 },
-    { minXX: -115, minYY: 45, minZZ: -35, maxXX: -105, maxYY: 55, maxZZ: -25 },
-    { minXX: 105, minYY: 45, minZZ: -35, maxXX: 115, maxYY: 55, maxZZ: -25 },
-    { minXX: 105, minYY: -55, minZZ: -35, maxXX: 115, maxYY: -45, maxZZ: -25 },
-    { minXX: -115, minYY: -55, minZZ: -35, maxXX: -105, maxYY: -45, maxZZ: -25 },
-  ];
-
-  tree.load(data);
-
-  function byXXYYZZ(a:any, b:any) {
-    return a.minXX - b.minXX || a.minYY - b.minYY || a.minZZ - b.minZZ;
-  }
-
-  sortedEqual(t, tree.search(arrToBBox([-180, -90, -50, 180, 90, 50])),
-    data, byXXYYZZ);
-
-  sortedEqual(t, tree.search(arrToBBox([-180, -90, -50, 0, 90, 0])), [
-    { minXX: -115, minYY: -55, minZZ: -35, maxXX: -105, maxYY: -45, maxZZ: -25 },
-    { minXX: -115, minYY: 45, minZZ: -35, maxXX: -105, maxYY: 55, maxZZ: -25 },
-  ], byXXYYZZ);
-
-  sortedEqual(t, tree.search(arrToBBox([0, -90, 0, 180, 90, 50])), [
-    { minXX: 105, minYY: -55, minZZ: 25, maxXX: 115, maxYY: -45, maxZZ: 35 },
-    { minXX: 105, minYY: 45, minZZ: 25, maxXX: 115, maxYY: 55, maxZZ: 35 },
-  ], byXXYYZZ);
-
-  sortedEqual(t, tree.search(arrToBBox([-180, 0, -50, 180, 90, 0])), [
-    { minXX: -115, minYY: 45, minZZ: -35, maxXX: -105, maxYY: 55, maxZZ: -25 },
-    { minXX: 105, minYY: 45, minZZ: -35, maxXX: 115, maxYY: 55, maxZZ: -25 },
-  ], byXXYYZZ);
-
-  sortedEqual(t, tree.search(arrToBBox([-180, -90, 0, 180, 0, 50])), [
-    { minXX: -115, minYY: -55, minZZ: 25, maxXX: -105, maxYY: -45, maxZZ: 35 },
-    { minXX: 105, minYY: -55, minZZ: 25, maxXX: 115, maxYY: -45, maxZZ: 35 },
-  ], byXXYYZZ);
-
-  sortedEqual(t, tree.search(arrToBBox([-180, -90, 0, 0, 90, 50])), [
-    { minXX: -115, minYY: -55, minZZ: 25, maxXX: -105, maxYY: -45, maxZZ: 35 },
-    { minXX: -115, minYY: 45, minZZ: 25, maxXX: -105, maxYY: 55, maxZZ: 35 },
-  ], byXXYYZZ);
-
-  sortedEqual(t, tree.search(arrToBBox([0, -90, -50, 180, 90, 0])), [
-    { minXX: 105, minYY: -55, minZZ: -35, maxXX: 115, maxYY: -45, maxZZ: -25 },
-    { minXX: 105, minYY: 45, minZZ: -35, maxXX: 115, maxYY: 55, maxZZ: -25 },
-  ], byXXYYZZ);
-
-  sortedEqual(t, tree.search(arrToBBox([-180, 0, 0, 180, 90, 50])), [
-    { minXX: -115, minYY: 45, minZZ: 25, maxXX: -105, maxYY: 55, maxZZ: 35 },
-    { minXX: 105, minYY: 45, minZZ: 25, maxXX: 115, maxYY: 55, maxZZ: 35 },
-  ], byXXYYZZ);
-
-  sortedEqual(t, tree.search(arrToBBox([-180, -90, -50, 180, 0, 0])), [
-    { minXX: -115, minYY: -55, minZZ: -35, maxXX: -105, maxYY: -45, maxZZ: -25 },
-    { minXX: 105, minYY: -55, minZZ: -35, maxXX: 115, maxYY: -45, maxZZ: -25 },
-  ], byXXYYZZ);
-  t.end();
-});
 
 t('#load bulk-loads the given data given max node entries and forms a proper search tree', t => {
 
@@ -467,8 +374,8 @@ interface FBBox extends BBox {
 }
 
 t('#remove accepts an equals function', t => {
-  const tree = new RBush3D<keyof BBox, FBBox>(8).load(data as FBBox[]);
-  const item:FBBox = { minX: 20, minY: 70, minZ: 90, maxX: 20, maxY: 70, maxZ: 90, foo: 'bar' };
+  const tree = new RBush3D(8).load(data as BBox[]);
+  const item:BBox = { minX: 20, minY: 70, minZ: 90, maxX: 20, maxY: 70, maxZ: 90, foo: 'bar' };
   tree.insert(item);
   tree.remove(JSON.parse(JSON.stringify(item)), (a, b) => a.foo === b.foo);
 
