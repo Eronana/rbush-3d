@@ -271,7 +271,7 @@ export class RBush3D {
 
     const nodesToSearch:Node[] = [];
     while (node) {
-      for (let i = 0, len = node.children.length; i < len; i++) {
+      for (let i = 0, len = node.children ? node.children.length : 0; i < len; i++) {
         // FIXME: remove ':any' when ts fix the bug
         const child:any = node.children[i];
         if (intersects(bbox, child)) {
