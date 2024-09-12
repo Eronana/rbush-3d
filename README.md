@@ -25,7 +25,7 @@ Or use CDN links for browsers:
 ### Creating a Tree
 
 ```typescript
-improt { RBush3D } from 'rbush-3d';
+import { RBush3D } from 'rbush-3d';
 const tree = new RBush3D();
 ```
 
