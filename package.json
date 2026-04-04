@@ -1,6 +1,7 @@
 {
   "name": "rbush-3d",
   "version": "0.0.4",
+  "type": "module",
   "description": "High-performance 3D spatial index for cuboids (based on R*-tree with bulk loading and bulk insertion algorithms)",
   "homepage": "https://github.com/eronana/rbush-3d",
   "repository": {
@@ -15,54 +16,41 @@
     "index",
     "math"
   ],
-  "author": "Vladimir Agafonkin",
-  "contributors": [
-    "Eronana"
-  ],
+  "author": "Eronana",
   "license": "MIT",
   "main": "dist/index.js",
-  "devDependencies": {
-    "@types/benchmark": "^1.0.31",
-    "benchmark": "^2.1.0",
-    "browserify": "^14.1.0",
-    "budo": "^10.0.4",
-    "coveralls": "^3.0.0",
-    "eslint": "^3.18.0",
-    "eslint-config-mourner": "^2.0.1",
-    "faucet": "0.0.1",
-    "nyc": "^12.0.2",
-    "regl": "^1.3.0",
-    "regl-camera": "^2.1.1",
-    "tape": "^4.5.1",
-    "ts-node": "^7.0.0",
-    "tslint": "^5.10.0",
-    "typescript": "^2.9.2",
-    "uglify-js": "^2.6.4"
-  },
   "scripts": {
-    "rawtest": "ts-node test/test.ts",
+    "rawtest": "tsx src/test.ts",
     "test": "npm run rawtest | faucet",
-    "lint": "tslint -p tsconfig.build.json",
-    "perf": "ts-node bench/perf.ts",
+    "lint": "eslint .",
+    "perf": "tsx bench/perf.ts",
     "cover": "nyc npm run rawtest",
     "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
-    "build": "tsc -p tsconfig.build.json",
-    "watch": "tsc -p tsconfig.build.json --watch",
-    "build-min": "npm run build && browserify dist/index.js -s RBush3D | uglifyjs -c warnings=false -m > dist/rbush3d.min.js",
-    "prepublish": "npm run build && npm run build-min",
-    "viz": "npm run build && budo viz/viz3d.js --open"
-  },
-  "eslintConfig": {
-    "extends": "mourner",
-    "rules": {
-      "new-cap": 0,
-      "consistent-return": 0
-    }
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "prepublish": "npm run build",
+    "viz": "vite viz --open"
   },
   "dependencies": {
-    "@types/node": "^10.5.1",
-    "@types/tape": "^4.2.32",
-    "quickselect": "^1.0.0"
+    "quickselect": "^3.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/benchmark": "^1.0.33",
+    "@types/tape": "^5.8.1",
+    "benchmark": "^2.1.0",
+    "coveralls": "^3.1.1",
+    "eslint": "^10.0.2",
+    "faucet": "0.0.4",
+    "nyc": "^18.0.0",
+    "rbush": "^4.0.1",
+    "regl": "^2.1.1",
+    "regl-camera": "^2.1.1",
+    "tsx": "^4.22.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1",
+    "vite": "^8.0.3"
   },
   "nyc": {
     "check-coverage": true,
