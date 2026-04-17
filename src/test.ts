@@ -1,20 +1,19 @@
-import { RBush3D, BBox, intersects, boxRayIntersects } from '../src';
-import t = require('tape');
+import { RBush3D, BBox, intersects, boxRayIntersects } from '.';
+import t from 'tape';
 import { Test } from 'tape';
-import { TLSSocket } from 'tls';
 
-const sortedEqual = (t:Test, a:any, b:any, compare?:Function) => {
+const sortedEqual = (t: Test, a: any, b: any, compare?: (a: any, b: any) => number) => {
   compare = compare || defaultCompare;
   t.same(a.slice().sort(compare), b.slice().sort(compare));
 };
 
-const defaultCompare = (a:any, b:any) => {
+const defaultCompare = (a: any, b: any) => {
   return (a.minX - b.minX) || (a.minY - b.minY) || (a.minZ - b.minZ) ||
     (a.maxX - b.maxX) || (a.maxY - b.maxY) || (a.maxZ - b.maxZ);
 };
 
-const someData = (n:number) => {
-  const data:BBox[] = [];
+const someData = (n: number) => {
+  const data: BBox[] = [];
 
   for (let i = 0; i < n; i++) {
     data.push({ minX: i, minY: i, minZ: 0, maxX: i, maxY: i, maxZ: 0 });
@@ -22,7 +21,7 @@ const someData = (n:number) => {
   return data;
 };
 
-const arrToBBox = (arr:number[]) => {
+const arrToBBox = (arr: number[]) => {
   return {
     minX: arr[0],
     minY: arr[1],
@@ -45,7 +44,7 @@ const data = [[0, 0, 0, 0, 0, 0], [10, 10, 10, 10, 10, 10], [20, 20, 20, 20, 20,
 [75, 75, 75, 75, 75, 75], [85, 85, 85, 85, 85, 85], [95, 95, 95, 95, 95, 95],
 ].map(arrToBBox);
 
-const bfRaycast = (data:BBox[], ox:number, oy:number, oz:number, dx:number, dy:number, dz:number) => {
+const bfRaycast = (data: BBox[], ox: number, oy: number, oz: number, dx: number, dy: number, dz: number) => {
   const result = { dist: Infinity, node: undefined as BBox | undefined  };
   if (!dx && !dy && !dz) return result;
   const idx = 1 / dx, idy = 1 / dy, idz = 1 / dz;
@@ -62,19 +61,19 @@ const bfRaycast = (data:BBox[], ox:number, oy:number, oz:number, dx:number, dy:n
   return result;
 };
 
-const bfSearch = (bbox:BBox, data:BBox[]) => {
+const bfSearch = (bbox: BBox, data: BBox[]) => {
   return data.filter(function (node) {
     return intersects(bbox, node);
   });
 };
 
-const bfCollides = (bbox:BBox, data:BBox[]) => {
+const bfCollides = (bbox: BBox, data: BBox[]) => {
   return data.some(function (node) {
     return intersects(bbox, node);
   });
 };
 
-const randBox = (size:number) => {
+const randBox = (size: number) => {
   const x = Math.random() * (2 - size) - 1,
     y = Math.random() * (2 - size) - 1,
     z = Math.random() * (2 - size) - 1;
@@ -88,7 +87,7 @@ const randBox = (size:number) => {
   };
 };
 
-const randBoxes = (n:number, size:number) => {
+const randBoxes = (n: number, size: number) => {
   const result = Array(n);
   for (let i = 0; i < n; i++) {
     result[i] = randBox(size);
@@ -121,12 +120,12 @@ t('constructor uses 16 max entries by default', t => {
 });
 
 interface XBBox {
-  minXX:number;
-  minYY:number;
-  minZZ:number;
-  maxXX:number;
-  maxYY:number;
-  maxZZ:number;
+  minXX: number;
+  minYY: number;
+  minZZ: number;
+  maxXX: number;
+  maxYY: number;
+  maxZZ: number;
 }
 
 t('#load bulk-loads the given data given max node entries and forms a proper search tree', t => {
@@ -370,12 +369,12 @@ t('#remove brings the tree to a clear state when removing everything one by one'
 });
 
 interface FBBox extends BBox {
-  foo:string;
+  foo: string;
 }
 
 t('#remove accepts an equals function', t => {
   const tree = new RBush3D(8).load(data as BBox[]);
-  const item:BBox = { minX: 20, minY: 70, minZ: 90, maxX: 20, maxY: 70, maxZ: 90, foo: 'bar' };
+  const item: BBox = { minX: 20, minY: 70, minZ: 90, maxX: 20, maxY: 70, maxZ: 90, foo: 'bar' };
   tree.insert(item);
   tree.remove(JSON.parse(JSON.stringify(item)), (a, b) => a.foo === b.foo);
 

@@ -1,15 +1,15 @@
-const quickselect = require('quickselect');
+import quickselect from 'quickselect';
 
 export interface GNode<L extends boolean> {
-  children:L extends true ? BBox[] : Node[];
-  height:number;
-  leaf:L;
-  minX:number;
-  minY:number;
-  minZ:number;
-  maxX:number;
-  maxY:number;
-  maxZ:number;
+  children: L extends true ? BBox[] : Node[];
+  height: number;
+  leaf: L;
+  minX: number;
+  minY: number;
+  minZ: number;
+  maxX: number;
+  maxY: number;
+  maxZ: number;
 }
 
 export type LeafNode = GNode<true>;
@@ -20,32 +20,32 @@ export type DetermineNode<L extends boolean> = L extends true ? LeafNode : NonLe
 export type DetermineLeaf<L extends boolean> = L extends true ? BBox : Node;
 
 export interface BBox {
-  minX:number;
-  minY:number;
-  minZ:number;
-  maxX:number;
-  maxY:number;
-  maxZ:number;
-  [k:number]:any;
-  [k:string]:any;
+  minX: number;
+  minY: number;
+  minZ: number;
+  maxX: number;
+  maxY: number;
+  maxZ: number;
+  [k: number]: any;
+  [k: string]: any;
 }
 
-export interface CompareAxis {
-  (a:BBox, b:BBox):number;
+export interface CompareAxis<T = BBox> {
+  (a: T, b: T): number;
 }
 
 export interface CompareEqual {
-  (a:BBox, b:BBox):boolean;
+  (a: BBox, b: BBox): boolean;
 }
 
 export interface DistNode {
-  dist:number;
-  node?:BBox;
+  dist: number;
+  node?: BBox;
 }
 
-const nodePool:Node[] = [];
-const freeNode = (node:Node) => nodePool.push(node);
-const freeAllNode = (node:Node) => {
+const nodePool: Node[] = [];
+const freeNode = (node: Node) => nodePool.push(node);
+const freeAllNode = (node: Node) => {
   if (node) {
     freeNode(node);
     if (!isLeaf(node)) {
@@ -54,7 +54,7 @@ const freeAllNode = (node:Node) => {
   }
 };
 
-const allowNode = <L extends boolean = true>(children:DetermineLeaf<L>[]) => {
+const allowNode = <L extends boolean = true>(children: DetermineLeaf<L>[]) => {
   let node = nodePool.pop() as DetermineNode<L>;
   if (node) {
     node.children = children as any;
@@ -82,9 +82,9 @@ const allowNode = <L extends boolean = true>(children:DetermineLeaf<L>[]) => {
   return node;
 };
 
-const distNodePool:DistNode[] = [];
-const freeDistNode = (node:DistNode) => distNodePool.push(node);
-const allowDistNode = (dist:number, node?:BBox) => {
+const distNodePool: DistNode[] = [];
+const freeDistNode = (node: DistNode) => distNodePool.push(node);
+const allowDistNode = (dist: number, node?: BBox) => {
   let heapNode = distNodePool.pop();
   if (heapNode) {
     heapNode.dist = dist;
@@ -95,15 +95,15 @@ const allowDistNode = (dist:number, node?:BBox) => {
   return heapNode;
 };
 
-const isLeaf = (node:Node):node is LeafNode => {
+const isLeaf = (node: Node): node is LeafNode => {
   return node.leaf;
 };
 
-const isLeafChild = (node:Node, child?:BBox | Node):child is BBox => {
+const isLeafChild = (node: Node, child?: BBox | Node): child is BBox => {
   return node.leaf;
 };
 
-const findItem = (item:BBox, items:BBox[], equalsFn?:CompareEqual) => {
+const findItem = (item: BBox, items: BBox[], equalsFn?: CompareEqual) => {
   if (!equalsFn) return items.indexOf(item);
 
   for (let i = 0; i < items.length; i++) {
@@ -113,12 +113,12 @@ const findItem = (item:BBox, items:BBox[], equalsFn?:CompareEqual) => {
 };
 
 // calculate node's bbox from bboxes of its children
-const calcBBox = (node:Node) => {
+const calcBBox = (node: Node) => {
   distBBox(node, 0, node.children.length, node);
 };
 
 // min bounding rectangle of node children from k to p-1
-const distBBox = (node:Node, k:number, p:number, destNode?:Node) => {
+const distBBox = (node: Node, k: number, p: number, destNode?: Node) => {
   let dNode = destNode;
   if (dNode) {
     dNode.minX = Infinity;
@@ -131,14 +131,14 @@ const distBBox = (node:Node, k:number, p:number, destNode?:Node) => {
     dNode = allowNode([]) as Node;
   }
 
-  for (let i = k, child:typeof node.children[0]; i < p; i++) {
+  for (let i = k, child: typeof node.children[0]; i < p; i++) {
     child = node.children[i];
     extend(dNode, child);
   }
   return dNode;
 };
 
-const extend = (a:BBox, b:BBox) => {
+const extend = (a: BBox, b: BBox) => {
   a.minX = Math.min(a.minX, b.minX);
   a.minY = Math.min(a.minY, b.minY);
   a.minZ = Math.min(a.minZ, b.minZ);
@@ -148,17 +148,17 @@ const extend = (a:BBox, b:BBox) => {
   return a;
 };
 
-const bboxVolume = (a:BBox) =>
+const bboxVolume = (a: BBox) =>
   (a.maxX - a.minX) *
   (a.maxY - a.minY) *
   (a.maxZ - a.minZ);
 
-const bboxMargin = (a:BBox) =>
+const bboxMargin = (a: BBox) =>
   (a.maxX - a.minX) +
   (a.maxY - a.minY) +
   (a.maxZ - a.minZ);
 
-const enlargedVolume = (a:BBox, b:BBox) => {
+const enlargedVolume = (a: BBox, b: BBox) => {
   const minX = Math.min(a.minX, b.minX),
     minY = Math.min(a.minY, b.minY),
     minZ = Math.min(a.minZ, b.minZ),
@@ -171,7 +171,7 @@ const enlargedVolume = (a:BBox, b:BBox) => {
     (maxZ - minZ);
 };
 
-const intersectionVolume = (a:BBox, b:BBox) => {
+const intersectionVolume = (a: BBox, b: BBox) => {
   const minX = Math.max(a.minX, b.minX),
     minY = Math.max(a.minY, b.minY),
     minZ = Math.max(a.minZ, b.minZ),
@@ -184,7 +184,7 @@ const intersectionVolume = (a:BBox, b:BBox) => {
     Math.max(0, maxZ - minZ);
 };
 
-const contains = (a:BBox, b:BBox) =>
+const contains = (a: BBox, b: BBox) =>
   a.minX <= b.minX &&
   a.minY <= b.minY &&
   a.minZ <= b.minZ &&
@@ -192,7 +192,7 @@ const contains = (a:BBox, b:BBox) =>
   b.maxY <= a.maxY &&
   b.maxZ <= a.maxZ;
 
-export const intersects = (a:BBox, b:BBox) =>
+export const intersects = (a: BBox, b: BBox) =>
   b.minX <= a.maxX &&
   b.minY <= a.maxY &&
   b.minZ <= a.maxZ &&
@@ -200,7 +200,7 @@ export const intersects = (a:BBox, b:BBox) =>
   b.maxY >= a.minY &&
   b.maxZ >= a.minZ;
 
-export const boxRayIntersects = (box:BBox, ox:number, oy:number, oz:number, idx:number, idy:number, idz:number) => {
+export const boxRayIntersects = (box: BBox, ox: number, oy: number, oz: number, idx: number, idy: number, idz: number) => {
   const tx0 = (box.minX - ox) * idx;
   const tx1 = (box.maxX - ox) * idx;
   const ty0 = (box.minY - oy) * idy;
@@ -223,9 +223,9 @@ export const boxRayIntersects = (box:BBox, ox:number, oy:number, oz:number, idx:
 // sort an array so that items come in groups of n unsorted items, with groups sorted between each other;
 // combines selection algorithm with binary divide & conquer approach
 
-const multiSelect = (arr:BBox[], left:number, right:number, n:number, compare:CompareAxis) => {
+const multiSelect = (arr: BBox[], left: number, right: number, n: number, compare: CompareAxis) => {
   const stack = [left, right];
-  var mid;
+  let mid;
   while (stack.length) {
     right = stack.pop()!;
     left = stack.pop()!;
@@ -239,21 +239,31 @@ const multiSelect = (arr:BBox[], left:number, right:number, n:number, compare:Co
   }
 };
 
-const compareMinX = (a:BBox, b:BBox) => a.minX - b.minX;
-const compareMinY = (a:BBox, b:BBox) => a.minY - b.minY;
-const compareMinZ = (a:BBox, b:BBox) => a.minZ - b.minZ;
+const compareMinX = (a: BBox, b: BBox) => a.minX - b.minX;
+const compareMinY = (a: BBox, b: BBox) => a.minY - b.minY;
+const compareMinZ = (a: BBox, b: BBox) => a.minZ - b.minZ;
 
 export class RBush3D {
-  private data:Node;
-  private maxEntries:number;
-  private minEntries:number;
-  private static pool:RBush3D[] = [];
+  public data: Node = {
+    children: [],
+    height: 0,
+    leaf: true,
+    minX: 0,
+    minY: 0,
+    minZ: 0,
+    maxX: 0,
+    maxY: 0,
+    maxZ: 0,
+  };
+  private maxEntries: number;
+  private minEntries: number;
+  private static pool: RBush3D[] = [];
 
   public static alloc() {
     return this.pool.pop() || new this();
   }
 
-  public static free(rbush:RBush3D) {
+  public static free(rbush: RBush3D) {
     rbush.clear();
     this.pool.push(rbush);
   }
@@ -264,16 +274,16 @@ export class RBush3D {
     this.clear();
   }
 
-  public search(bbox:BBox) {
-    let node:NullableNode = this.data;
-    const result:BBox[] = [];
+  public search(bbox: BBox) {
+    let node: NullableNode = this.data;
+    const result: BBox[] = [];
     if (!intersects(bbox, node)) return result;
 
-    const nodesToSearch:Node[] = [];
+    const nodesToSearch: Node[] = [];
     while (node) {
       for (let i = 0, len = node.children.length; i < len; i++) {
         // FIXME: remove ':any' when ts fix the bug
-        const child:any = node.children[i];
+        const child: any = node.children[i];
         if (intersects(bbox, child)) {
           if (isLeafChild(node, child)) result.push(child);
           else if (contains(bbox, child)) this._all(child, result);
@@ -285,14 +295,14 @@ export class RBush3D {
     return result;
   }
 
-  public collides(bbox:BBox) {
-    let node:NullableNode = this.data;
+  public collides(bbox: BBox) {
+    let node: NullableNode = this.data;
     if (!intersects(bbox, node)) return false;
-    const nodesToSearch:Node[] = [];
+    const nodesToSearch: Node[] = [];
     while (node) {
       for (let i = 0, len = node.children.length; i < len; i++) {
         // FIXME: remove ':any' when ts fix the bug
-        const child:any = node.children[i];
+        const child: any = node.children[i];
         if (intersects(bbox, child)) {
           if (isLeafChild(node, child) || contains(bbox, child)) return true;
           nodesToSearch.push(child);
@@ -303,13 +313,13 @@ export class RBush3D {
     return false;
   }
 
-  public raycastInv(ox:number, oy:number, oz:number, idx:number, idy:number, idz:number, maxLen = Infinity):DistNode {
+  public raycastInv(ox: number, oy: number, oz: number, idx: number, idy: number, idz: number, maxLen = Infinity): DistNode {
     let node = this.data;
     if (idx === Infinity && idy === Infinity && idz === Infinity) return allowDistNode(Infinity, undefined);
     if (boxRayIntersects(node, ox, oy, oz, idx, idy, idz) === Infinity) return allowDistNode(Infinity, undefined);
 
     const heap = [allowDistNode(0, node)];
-    const swap = (a:number, b:number) => {
+    const swap = (a: number, b: number) => {
       const t = heap[a];
       heap[a] = heap[b];
       heap[b] = t;
@@ -334,7 +344,7 @@ export class RBush3D {
       freeDistNode(top);
       return top.node;
     };
-    const push = (dist:number, node:Node) => {
+    const push = (dist: number, node: Node) => {
       let idx = heap.length;
       heap.push(allowDistNode(dist, node));
       while (idx > 0) {
@@ -346,7 +356,7 @@ export class RBush3D {
     };
 
     let dist = maxLen;
-    let result:BBox|undefined;
+    let result: BBox|undefined;
     while (heap.length && heap[0].dist < dist) {
       node = pop() as Node;
       for (let i = 0, len = node.children.length; i < len; i++) {
@@ -366,7 +376,7 @@ export class RBush3D {
     return allowDistNode(dist < maxLen ? dist : Infinity, result);
   }
 
-  public raycast(ox:number, oy:number, oz:number, dx:number, dy:number, dz:number, maxLen = Infinity) {
+  public raycast(ox: number, oy: number, oz: number, dx: number, dy: number, dz: number, maxLen = Infinity) {
     return this.raycastInv(ox, oy, oz, 1 / dx, 1 / dy, 1 / dz, maxLen);
   }
 
@@ -374,18 +384,18 @@ export class RBush3D {
     return this._all(this.data, []);
   }
 
-  public load(data:BBox[]) {
+  public load(data: BBox[]) {
     if (!(data && data.length)) return this;
 
     if (data.length < this.minEntries) {
-      for (var i = 0, len = data.length; i < len; i++) {
+      for (let i = 0, len = data.length; i < len; i++) {
         this.insert(data[i]);
       }
       return this;
     }
 
     // recursively build the tree with the given data from scratch using OMT algorithm
-    var node = this.build(data.slice(), 0, data.length - 1, 0);
+    let node = this.build(data.slice(), 0, data.length - 1, 0);
 
     if (!this.data.children.length) {
       // save as is if tree is empty
@@ -410,7 +420,7 @@ export class RBush3D {
     return this;
   }
 
-  public insert(item?:BBox) {
+  public insert(item?: BBox) {
     if (item) this._insert(item, this.data.height - 1);
     return this;
   }
@@ -423,16 +433,16 @@ export class RBush3D {
     return this;
   }
 
-  public remove(item?:BBox, equalsFn?:CompareEqual) {
+  public remove(item?: BBox, equalsFn?: CompareEqual) {
     if (!item) return this;
 
-    let node:NullableNode = this.data;
+    let node: NullableNode = this.data;
     let i = 0;
     let goingUp = false;
-    let index:number;
-    let parent:NonLeafNode | undefined;
-    const path:Node[] = [];
-    const indexes:number[] = [];
+    let index: number;
+    let parent: NonLeafNode | undefined;
+    const path: Node[] = [];
+    const indexes: number[] = [];
     // depth-first iterative tree traversal
     while (node || path.length) {
 
@@ -478,17 +488,17 @@ export class RBush3D {
     return this.data;
   }
 
-  public fromJSON(data:Node) {
+  public fromJSON(data: Node) {
     freeAllNode(this.data);
     this.data = data;
     return this;
   }
 
-  private build(items:BBox[], left:number, right:number, height:number) {
+  private build(items: BBox[], left: number, right: number, height: number) {
 
     const N = right - left + 1;
     let M = this.maxEntries;
-    let node:Node;
+    let node: Node;
     if (N <= M) {
       // reached leaf level; return leaf
       node = allowNode(items.slice(left, right + 1));
@@ -543,8 +553,8 @@ export class RBush3D {
     return node;
   }
 
-  private _all(node:Node | undefined, result:BBox[]) {
-    const nodesToSearch:Node[] = [];
+  private _all(node: Node | undefined, result: BBox[]) {
+    const nodesToSearch: Node[] = [];
     while (node) {
       if (isLeaf(node)) result.push(...node.children);
       else nodesToSearch.push(...node.children);
@@ -554,10 +564,10 @@ export class RBush3D {
     return result;
   }
 
-  private chooseSubtree(bbox:BBox, node:Node, level:number, path:Node[]) {
-    let minVolume:number;
-    let minEnlargement:number;
-    let targetNode:NullableNode;
+  private chooseSubtree(bbox: BBox, node: Node, level: number, path: Node[]) {
+    let minVolume: number;
+    let minEnlargement: number;
+    let targetNode: NullableNode;
     while (true) {
       path.push(node);
 
@@ -592,7 +602,7 @@ export class RBush3D {
   }
 
   // split overflowed node into two
-  private split(insertPath:Node[], level:number) {
+  private split(insertPath: Node[], level: number) {
 
     const node = insertPath[level];
     const M = node.children.length;
@@ -613,7 +623,7 @@ export class RBush3D {
     else this.splitRoot(node, newNode);
   }
 
-  private splitRoot(node:Node, newNode:Node) {
+  private splitRoot(node: Node, newNode: Node) {
     // split root node
     this.data = allowNode<false>([node, newNode]);
     this.data.height = node.height + 1;
@@ -621,10 +631,10 @@ export class RBush3D {
     calcBBox(this.data);
   }
 
-  private chooseSplitIndex(node:Node, m:number, M:number) {
+  private chooseSplitIndex(node: Node, m: number, M: number) {
     let minOverlap = Infinity;
     let minVolume = Infinity;
-    let index:number;
+    let index: number;
     for (let i = m; i <= M - m; i++) {
       const bbox1 = distBBox(node, 0, i);
       const bbox2 = distBBox(node, i, M);
@@ -652,7 +662,7 @@ export class RBush3D {
   }
 
   // sorts node children by the best axis for split
-  private chooseSplitAxis(node:Node, m:number, M:number) {
+  private chooseSplitAxis(node: Node, m: number, M: number) {
     const xMargin = this.allDistMargin(node, m, M, compareMinX);
     const yMargin = this.allDistMargin(node, m, M, compareMinY);
     const zMargin = this.allDistMargin(node, m, M, compareMinZ);
@@ -668,7 +678,7 @@ export class RBush3D {
   }
 
   // total margin of all possible split distributions where each node is at least m full
-  private allDistMargin(node:Node, m:number, M:number, compare:typeof node extends LeafNode ? CompareAxis : Function) {
+  private allDistMargin(node: Node, m: number, M: number, compare: typeof node extends LeafNode ? CompareAxis : CompareAxis<Node>) {
     (node.children as any).sort(compare);
 
     const leftBBox = distBBox(node, 0, m);
@@ -690,16 +700,16 @@ export class RBush3D {
     return margin;
   }
 
-  private adjustParentBBoxes(bbox:BBox, path:Node[], level:number) {
+  private adjustParentBBoxes(bbox: BBox, path: Node[], level: number) {
     // adjust bboxes along the given tree path
     for (let i = level; i >= 0; i--) {
       extend(path[i], bbox);
     }
   }
 
-  private condense(path:Node[]) {
+  private condense(path: Node[]) {
     // go through the path, removing empty nodes and updating bboxes
-    for (let i = path.length - 1, siblings:Node[]; i >= 0; i--) {
+    for (let i = path.length - 1, siblings: Node[]; i >= 0; i--) {
       if (path[i].children.length === 0) {
         if (i > 0) {
           siblings = path[i - 1].children as Node[];
@@ -714,8 +724,8 @@ export class RBush3D {
     }
   }
 
-  private _insert(item:BBox | Node, level:number, isNode?:boolean) {
-    const insertPath:Node[] = [];
+  private _insert(item: BBox | Node, level: number, isNode?: boolean) {
+    const insertPath: Node[] = [];
 
     // find the best node for accommodating the item, saving all nodes along the path too
     const node = this.chooseSubtree(item, this.data, level, insertPath);
