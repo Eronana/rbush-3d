@@ -6,19 +6,13 @@ RBush-3D is 3D version of [RBush](https://github.com/mourner/rbush).
 [![Build Status](https://travis-ci.org/Eronana/rbush-3d.svg?branch=master)](https://travis-ci.org/Eronana/rbush-3d)
 [![Coverage Status](https://coveralls.io/repos/github/Eronana/rbush-3d/badge.svg?branch=master)](https://coveralls.io/github/Eronana/rbush-3d?branch=master)
 
-## TODO
-- [x] real 3D test
-- [ ] Demos
-- [x] Benchmarks
-
+![](./viz.png)
 
 ## Install
 
-Install with NPM (`npm install rbush-3d`), and Chinese user could use CNPM(`cnpm install rbush-3d`).
+Install with NPM: `npm install rbush-3d`
 
-Or use CDN links for browsers:
-[rbush3d.js](https://unpkg.com/rbush-3d@0.0.4/dist/rbush3d.js),
-[rbush3d.min.js](https://unpkg.com/rbush-3d@0.0.4/dist/rbush3d.min.js)
+Or use CDN links for browsers: https://app.unpkg.com/rbush-3d/files/dist/index.js
 
 ## Usage
 
