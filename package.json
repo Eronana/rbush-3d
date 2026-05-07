@@ -24,8 +24,8 @@
     "test": "npm run rawtest | faucet",
     "lint": "eslint .",
     "perf": "tsx bench/perf.ts",
-    "cover": "nyc npm run rawtest",
-    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls",
+    "cover": "c8 npm run rawtest",
+    "coveralls": "npm run cover && coveralls < ./coverage/lcov.info",
     "build": "tsc",
     "watch": "tsc --watch",
     "prepublish": "npm run build",
@@ -40,10 +40,10 @@
     "@types/benchmark": "^1.0.33",
     "@types/tape": "^5.8.1",
     "benchmark": "^2.1.0",
+    "c8": "^11.0.0",
     "coveralls": "^3.1.1",
     "eslint": "^10.0.2",
     "faucet": "0.0.4",
-    "nyc": "^18.0.0",
     "rbush": "^4.0.1",
     "regl": "^2.1.1",
     "regl-camera": "^2.1.1",
@@ -52,7 +52,7 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.3"
   },
-  "nyc": {
+  "c8": {
     "check-coverage": true,
     "lines": 90,
     "statements": 90,
