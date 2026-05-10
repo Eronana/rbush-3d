@@ -19,6 +19,9 @@
   "author": "Eronana",
   "license": "MIT",
   "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "rawtest": "tsx src/test.ts",
     "test": "npm run rawtest | faucet",
