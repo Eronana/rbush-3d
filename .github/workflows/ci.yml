@@ -37,6 +37,20 @@ jobs:
           name: ${{ steps.build.outputs.filename }}
           path: ${{ steps.build.outputs.filename }}
 
+      - name: Check tag version
+        if: ${{ github.ref_type == 'tag' && startsWith(github.ref_name, 'v') }}
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+
+          echo "Tag version: ${TAG_VERSION}"
+          echo "Package version: ${PACKAGE_VERSION}"
+
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Tag version does not match package.json version"
+            exit 1
+          fi
+
       - name: Publish
-        if: ${{ github.ref_type == 'tag' }}
+        if: ${{ github.ref_type == 'tag' && startsWith(github.ref_name, 'v') }}
         run: echo should run npm publish ${{ steps.build.outputs.filename }}
