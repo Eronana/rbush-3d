@@ -3,7 +3,7 @@ RBush-3D
 
 RBush-3D is 3D version of [RBush](https://github.com/mourner/rbush).
 
-[![Build Status](https://travis-ci.org/Eronana/rbush-3d.svg?branch=master)](https://travis-ci.org/Eronana/rbush-3d)
+[![.github/workflows/ci.yml](https://github.com/Eronana/rbush-3d/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Eronana/rbush-3d/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/Eronana/rbush-3d/badge.svg?branch=master)](https://coveralls.io/github/Eronana/rbush-3d?branch=master)
 
 ![](./viz.png)
