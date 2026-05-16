@@ -30,7 +30,6 @@
     "cover": "c8 npm run rawtest",
     "build": "tsc",
     "watch": "tsc --watch",
-    "prepublish": "npm run build",
     "viz": "vite viz --open"
   },
   "dependencies": {
