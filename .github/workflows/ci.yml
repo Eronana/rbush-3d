@@ -2,7 +2,7 @@ on:
   push:
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,7 +13,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run tests
         run: npm run cover
@@ -23,3 +23,20 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        id: build
+        run: |
+          npm run build
+          PKG_FILE=$(npm pack | tail -n 1)
+          echo "filename=$PKG_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build.outputs.filename }}
+          path: ${{ steps.build.outputs.filename }}
+
+      - name: Publish
+        if: ${{ github.ref_type == 'tag' }}
+        run: echo should run npm publish ${{ steps.build.outputs.filename }}
