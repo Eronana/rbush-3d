@@ -28,7 +28,6 @@
     "lint": "eslint .",
     "perf": "tsx bench/perf.ts",
     "cover": "c8 npm run rawtest",
-    "coveralls": "npm run cover && coveralls < ./coverage/lcov.info",
     "build": "tsc",
     "watch": "tsc --watch",
     "prepublish": "npm run build",
