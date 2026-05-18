@@ -1,4 +1,4 @@
-import Benchmark = require('benchmark');
+import Benchmark from 'benchmark';
 import { RBush3D } from '../src';
 import { genData } from './gendata';
 
@@ -12,10 +12,10 @@ new Benchmark.Suite()
     const tree = new RBush3D(maxFill);
     tree.load(data);
 })
-.on('error', function(event:any) {
+.on('error', function(event: any) {
     console.log(event.target.error);
 })
-.on('cycle', function(event:any) {
+.on('cycle', function(event: any) {
     console.log(String(event.target));
 })
 .run();

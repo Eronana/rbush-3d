@@ -1,20 +1,19 @@
-import { RBush3D, BBox, intersects, boxRayIntersects } from '../src';
-import t = require('tape');
+import { RBush3D, BBox, intersects, boxRayIntersects } from '.';
+import t from 'tape';
 import { Test } from 'tape';
-import { TLSSocket } from 'tls';
 
-const sortedEqual = (t:Test, a:any, b:any, compare?:Function) => {
+const sortedEqual = (t: Test, a: any, b: any, compare?: (a: any, b: any) => number) => {
   compare = compare || defaultCompare;
   t.same(a.slice().sort(compare), b.slice().sort(compare));
 };
 
-const defaultCompare = (a:any, b:any) => {
+const defaultCompare = (a: any, b: any) => {
   return (a.minX - b.minX) || (a.minY - b.minY) || (a.minZ - b.minZ) ||
     (a.maxX - b.maxX) || (a.maxY - b.maxY) || (a.maxZ - b.maxZ);
 };
 
-const someData = (n:number) => {
-  const data:BBox[] = [];
+const someData = (n: number) => {
+  const data: BBox[] = [];
 
   for (let i = 0; i < n; i++) {
     data.push({ minX: i, minY: i, minZ: 0, maxX: i, maxY: i, maxZ: 0 });
@@ -22,7 +21,7 @@ const someData = (n:number) => {
   return data;
 };
 
-const arrToBBox = (arr:number[]) => {
+const arrToBBox = (arr: number[]) => {
   return {
     minX: arr[0],
     minY: arr[1],
@@ -33,19 +32,22 @@ const arrToBBox = (arr:number[]) => {
   } as BBox;
 };
 
-const data = [[0, 0, 0, 0, 0, 0], [10, 10, 10, 10, 10, 10], [20, 20, 20, 20, 20, 20], [25, 0, 0, 25, 0, 0], [35, 10, 5, 35, 10, 5],
-[45, 20, 10, 45, 20, 10], [0, 25, 50, 0, 25, 50], [10, 35, 60, 10, 35, 60], [20, 45, 30, 20, 45, 30], [25, 25, 25, 25, 25, 25],
-[35, 35, 35, 35, 35, 35], [45, 45, 45, 45, 45, 45], [50, 0, 25, 50, 0, 25], [60, 10, 30, 60, 10, 30], [70, 20, 30, 70, 20, 30],
-[75, 0, 10, 75, 0, 10], [85, 10, 60, 85, 10, 60], [95, 20, 0, 95, 20, 0], [50, 25, 20, 50, 25, 20], [60, 35, 50, 60, 35, 50],
-[70, 45, 70, 70, 45, 70], [75, 25, 45, 75, 25, 45], [85, 35, 15, 85, 35, 15], [95, 45, 5, 95, 45, 5], [0, 50, 0, 0, 50, 0],
-[10, 60, 80, 10, 60, 80], [20, 70, 40, 20, 70, 40], [25, 50, 20, 25, 50, 20], [35, 60, 55, 35, 60, 55], [45, 70, 35, 45, 70, 35],
-[0, 75, 30, 0, 75, 30], [10, 85, 50, 10, 85, 50], [20, 95, 25, 20, 95, 25], [25, 75, 45, 25, 75, 45], [35, 85, 50, 35, 85, 50],
-[45, 95, 15, 45, 95, 15], [50, 50, 50, 50, 50, 50], [60, 60, 60, 60, 60, 60], [70, 70, 70, 70, 70, 70], [75, 50, 30, 75, 50, 30],
-[85, 60, 30, 85, 60, 30], [95, 70, 45, 95, 70, 45], [50, 75, 20, 50, 75, 20], [60, 85, 65, 60, 85, 65], [70, 95, 85, 70, 95, 85],
-[75, 75, 75, 75, 75, 75], [85, 85, 85, 85, 85, 85], [95, 95, 95, 95, 95, 95],
+const data = [
+  [0, 0, 0, 0, 0, 0], [10, 10, 10, 10, 10, 10], [20, 20, 20, 20, 20, 20], [25, 0, 0, 25, 0, 0],
+  [35, 10, 5, 35, 10, 5], [45, 20, 10, 45, 20, 10], [0, 25, 50, 0, 25, 50], [10, 35, 60, 10, 35, 60],
+  [20, 45, 30, 20, 45, 30], [25, 25, 25, 25, 25, 25], [35, 35, 35, 35, 35, 35], [45, 45, 45, 45, 45, 45],
+  [50, 0, 25, 50, 0, 25], [60, 10, 30, 60, 10, 30], [70, 20, 30, 70, 20, 30],[75, 0, 10, 75, 0, 10],
+  [85, 10, 60, 85, 10, 60], [95, 20, 0, 95, 20, 0], [50, 25, 20, 50, 25, 20], [60, 35, 50, 60, 35, 50],
+  [70, 45, 70, 70, 45, 70], [75, 25, 45, 75, 25, 45], [85, 35, 15, 85, 35, 15], [95, 45, 5, 95, 45, 5],
+  [0, 50, 0, 0, 50, 0], [10, 60, 80, 10, 60, 80], [20, 70, 40, 20, 70, 40], [25, 50, 20, 25, 50, 20],
+  [35, 60, 55, 35, 60, 55], [45, 70, 35, 45, 70, 35], [0, 75, 30, 0, 75, 30], [10, 85, 50, 10, 85, 50],
+  [20, 95, 25, 20, 95, 25], [25, 75, 45, 25, 75, 45], [35, 85, 50, 35, 85, 50], [45, 95, 15, 45, 95, 15],
+  [50, 50, 50, 50, 50, 50], [60, 60, 60, 60, 60, 60], [70, 70, 70, 70, 70, 70], [75, 50, 30, 75, 50, 30],
+  [85, 60, 30, 85, 60, 30], [95, 70, 45, 95, 70, 45], [50, 75, 20, 50, 75, 20], [60, 85, 65, 60, 85, 65],
+  [70, 95, 85, 70, 95, 85], [75, 75, 75, 75, 75, 75], [85, 85, 85, 85, 85, 85], [95, 95, 95, 95, 95, 95],
 ].map(arrToBBox);
 
-const bfRaycast = (data:BBox[], ox:number, oy:number, oz:number, dx:number, dy:number, dz:number) => {
+const bfRaycast = (data: BBox[], ox: number, oy: number, oz: number, dx: number, dy: number, dz: number) => {
   const result = { dist: Infinity, node: undefined as BBox | undefined  };
   if (!dx && !dy && !dz) return result;
   const idx = 1 / dx, idy = 1 / dy, idz = 1 / dz;
@@ -62,19 +64,19 @@ const bfRaycast = (data:BBox[], ox:number, oy:number, oz:number, dx:number, dy:n
   return result;
 };
 
-const bfSearch = (bbox:BBox, data:BBox[]) => {
+const bfSearch = (bbox: BBox, data: BBox[]) => {
   return data.filter(function (node) {
     return intersects(bbox, node);
   });
 };
 
-const bfCollides = (bbox:BBox, data:BBox[]) => {
+const bfCollides = (bbox: BBox, data: BBox[]) => {
   return data.some(function (node) {
     return intersects(bbox, node);
   });
 };
 
-const randBox = (size:number) => {
+const randBox = (size: number) => {
   const x = Math.random() * (2 - size) - 1,
     y = Math.random() * (2 - size) - 1,
     z = Math.random() * (2 - size) - 1;
@@ -88,7 +90,7 @@ const randBox = (size:number) => {
   };
 };
 
-const randBoxes = (n:number, size:number) => {
+const randBoxes = (n: number, size: number) => {
   const result = Array(n);
   for (let i = 0; i < n; i++) {
     result[i] = randBox(size);
@@ -121,12 +123,12 @@ t('constructor uses 16 max entries by default', t => {
 });
 
 interface XBBox {
-  minXX:number;
-  minYY:number;
-  minZZ:number;
-  maxXX:number;
-  maxYY:number;
-  maxZZ:number;
+  minXX: number;
+  minYY: number;
+  minZZ: number;
+  maxXX: number;
+  maxYY: number;
+  maxZZ: number;
 }
 
 t('#load bulk-loads the given data given max node entries and forms a proper search tree', t => {
@@ -370,12 +372,12 @@ t('#remove brings the tree to a clear state when removing everything one by one'
 });
 
 interface FBBox extends BBox {
-  foo:string;
+  foo: string;
 }
 
 t('#remove accepts an equals function', t => {
   const tree = new RBush3D(8).load(data as BBox[]);
-  const item:BBox = { minX: 20, minY: 70, minZ: 90, maxX: 20, maxY: 70, maxZ: 90, foo: 'bar' };
+  const item: BBox = { minX: 20, minY: 70, minZ: 90, maxX: 20, maxY: 70, maxZ: 90, foo: 'bar' };
   tree.insert(item);
   tree.remove(JSON.parse(JSON.stringify(item)), (a, b) => a.foo === b.foo);
 

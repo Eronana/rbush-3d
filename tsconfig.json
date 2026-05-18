@@ -1,36 +1,18 @@
 {
   "compilerOptions": {
-    "declaration": false,
-    "lib": ["esnext"],
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "strict": true,
+    "sourceMap": true,
+    "declaration": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "esnext",
     "noImplicitReturns": true,
     "noImplicitAny": true,
-    "outDir": "dist",
     "removeComments": true,
-    "rootDir": "./",
-    "inlineSourceMap": true,
-    "strict": true,
-    "target": "es5",
-    "strictPropertyInitialization": false,
-    "plugins": [
-      {
-        "name": "tslint-language-service",
-        "alwaysShowRuleFailuresAsWarnings": false,
-        "ignoreDefinitionFiles": true,
-        "configFile": "./tslint.json",
-        "disableNoUnusedVariableRule": false,
-        "supressWhileTypeErrorsPresent": false,
-        "mockTypeScriptVersion": false
-      }
-    ]
+    "outDir": "dist",
+    "rootDir": "./src"
   },
   "include": [
-    "src/**/*",
-    "test/**/*",
-    "bench/**/*"
-  ],
-  "exclude": [
-    "node_modules",
+    "src/index.ts"
   ]
 }

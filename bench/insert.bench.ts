@@ -1,8 +1,7 @@
-import Benchmark = require('benchmark');
+import Benchmark from 'benchmark';
 import { RBush3D } from '../src';
 import { genData, convertTo2d } from './gendata';
-
-const rbush = require('rbush');
+import RBush from 'rbush';
 
 const N = 10000,
   maxFill = 16;
@@ -18,15 +17,15 @@ new Benchmark.Suite()
   }
 })
 .add('insert ' + N + ' items (' + maxFill + ' node size), rbush(original 2d version)', function () {
-  const tree = rbush(maxFill);
+  const tree = new RBush(maxFill);
   for (let i = 0; i < N; i++) {
     tree.insert(data[i]);
   }
 })
-.on('error', function(event:any) {
+.on('error', function(event: any) {
   console.log(event.target.error);
 })
-.on('cycle', function(event:any) {
+.on('cycle', function(event: any) {
   console.log(String(event.target));
 })
 .run();

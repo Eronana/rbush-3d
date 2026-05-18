@@ -1,8 +1,4 @@
 node_modules
-npm-debug.log
 coverage
-rbush3d.js
-rbush3d.min.js
-package-lock.json
 dist
-.nyc_output
+.DS_Store
