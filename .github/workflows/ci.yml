@@ -53,4 +53,4 @@ jobs:
 
       - name: Publish
         if: ${{ github.ref_type == 'tag' && startsWith(github.ref_name, 'v') }}
-        run: echo should run npm publish ${{ steps.build.outputs.filename }}
+        run: npm stage publish ${{ steps.build.outputs.filename }}
